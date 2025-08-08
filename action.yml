@@ -1,5 +1,47 @@
 name: Run deploy
 
+inputs:
+    wireguard-host:
+        description: The host to tunnel through for your VPN.
+        required: true
+
+    wireguard-port:
+        description: The port to connect to for the VPN tunnel.
+        default: 51820
+        required: true
+
+    wireguard-assigned-ip:
+        description: The IP on the remote network you will be assigned.
+        required: true
+
+    wireguard-additional-allowed-ips:
+        description: Additional IPs beyond your assigned IP and the SSH host's IP that you need mapped, if any.
+        required: true
+
+    wireguard-public-key:
+        description: The public key for your tunnel.
+        required: true
+
+    wireguard-private-key:
+        description: The private key for your tunnel.
+        required: true
+
+    ssh-host:
+        description: The remote host you want to connect to.
+        required: true
+
+    ssh-user:
+        description: The user on the remote host that you want to connect as.
+        required: true
+
+    ssh-private-key:
+        description: The private key to connect to the remote host with.
+        required: true
+
+    ssh-command:
+        description: The command to run over SSH.
+        required: true
+
 on: [workflow_dispatch]
 
 jobs:
@@ -9,16 +51,16 @@ jobs:
             - name: Set up WireGuard
               uses: egor-tensin/setup-wireguard@v1
               with:
-                endpoint: ${{ vars.WIREGUARD_HOST }}:${{ vars.WIREGUARD_PORT }}
-                endpoint_public_key: ${{ vars.WIREGUARD_PUBLIC_KEY }}
-                ips: ${{ vars.WIREGUARD_INTERFACE_IP }}
-                allowed_ips: ${{ vars.WIREGUARD_ADDITIONAL_IPS }}, ${{ vars.WIREGUARD_INTERFACE_IP }}, ${{ secrets.SSH_HOST }}
-                private_key: '${{ secrets.WIREGUARD_PRIVATE_KEY }}'
+                endpoint: ${{ inputs.wireguard-host }}:${{ inputs.wireguard-port }}
+                endpoint_public_key: ${{ inputs.wireguard-public-key }}
+                ips: ${{ inputs.wireguard-assigned-ip }}
+                allowed_ips: ${{ inputs.wireguard-additional-allowed-ips }}, ${{ inputs.wireguard-assigned-ip }}, ${{ inputs.ssh-host }}
+                private_key: '${{ inputs.wireguard-private-key }}'
 
             - name: SSH proxy command
               uses: appleboy/ssh-action@v1
               with:
-                host: ${{ secrets.SSH_HOST }}
-                username: ${{ secrets.SSH_USER }}
-                key: ${{ secrets.SSH_PRIVATE_KEY }}
-                script: "${{ vars.DEPLOY_SCRIPT }}"
+                host: ${{ inputs.ssh-host }}
+                username: ${{ inputs.ssh-user }}
+                key: ${{ inputs.ssh-private-key }}
+                script: "${{ inputs.ssh-command }}"
