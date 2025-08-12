@@ -1,4 +1,4 @@
-name: Run deploy
+name: Run remote script
 
 inputs:
     wireguard-host:
