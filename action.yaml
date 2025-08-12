@@ -42,25 +42,22 @@ inputs:
         description: The command to run over SSH.
         required: true
 
-on: [workflow_dispatch]
+runs:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Set up WireGuard
+          uses: egor-tensin/setup-wireguard@v1
+          with:
+            endpoint: ${{ inputs.wireguard-host }}:${{ inputs.wireguard-port }}
+            endpoint_public_key: ${{ inputs.wireguard-public-key }}
+            ips: ${{ inputs.wireguard-assigned-ip }}
+            allowed_ips: ${{ inputs.wireguard-additional-allowed-ips }}, ${{ inputs.wireguard-assigned-ip }}, ${{ inputs.ssh-host }}
+            private_key: '${{ inputs.wireguard-private-key }}'
 
-jobs:
-    deploy:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Set up WireGuard
-              uses: egor-tensin/setup-wireguard@v1
-              with:
-                endpoint: ${{ inputs.wireguard-host }}:${{ inputs.wireguard-port }}
-                endpoint_public_key: ${{ inputs.wireguard-public-key }}
-                ips: ${{ inputs.wireguard-assigned-ip }}
-                allowed_ips: ${{ inputs.wireguard-additional-allowed-ips }}, ${{ inputs.wireguard-assigned-ip }}, ${{ inputs.ssh-host }}
-                private_key: '${{ inputs.wireguard-private-key }}'
-
-            - name: SSH proxy command
-              uses: appleboy/ssh-action@v1
-              with:
-                host: ${{ inputs.ssh-host }}
-                username: ${{ inputs.ssh-user }}
-                key: ${{ inputs.ssh-private-key }}
-                script: "${{ inputs.ssh-command }}"
+        - name: SSH proxy command
+          uses: appleboy/ssh-action@v1
+          with:
+            host: ${{ inputs.ssh-host }}
+            username: ${{ inputs.ssh-user }}
+            key: ${{ inputs.ssh-private-key }}
+            script: "${{ inputs.ssh-command }}"
