@@ -43,7 +43,7 @@ inputs:
         required: true
 
 runs:
-    runs-on: ubuntu-latest
+    using: composite
     steps:
         - name: Set up WireGuard
           uses: egor-tensin/setup-wireguard@v1
